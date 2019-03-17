@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
@@ -34,13 +35,19 @@ namespace IssLocator
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            services.AddHangfire(configuration =>
+            {
+                configuration.UseSqlServerStorage("Server=(localdb)\\mssqllocaldb;Database=aspnet-IssLocator-5C001A4A-D296-449B-99D0-CFFE9A8C0498;Trusted_Connection=True;MultipleActiveResultSets=true");
+            });
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
             services.AddDefaultIdentity<IdentityUser>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+                .AddControllersAsServices();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -60,6 +67,8 @@ namespace IssLocator
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
+            app.UseHangfireServer();
+            app.UseHangfireDashboard();
 
             app.UseAuthentication();
 

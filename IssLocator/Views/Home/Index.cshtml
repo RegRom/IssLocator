@@ -1,4 +1,4 @@
-﻿
+﻿@model IssLocator.ViewModels.IssLocationViewModel
 @{
     ViewData["Title"] = "Home Page";
 }
@@ -6,6 +6,33 @@
 <h1>ISS Locator Application</h1>
 
 <div>
-    <p>Click the button below to check current ISS location</p>
+    @*<p>Click the button below to check current ISS location</p>*@
+    <p>Witaj w internetowym lokalizatorze Międzynarodowej Stacji Kosmicznej (ISS)</p>
+</div>
+<div>
+    <ul>
+        @if (Model.TrackPoints.Count() > 2)
+        {
+            foreach (var point in Model.TrackPoints)
+             {
+                 <li>
+                     <div>
+                         <div>
+                             @point.Timestamp
+                         </div>
+                         <div>
+                             @point.Latitude
+                         </div>
+                         <div>
+                             @point.Longitude
+                         </div>
+                     </div>
+                 </li>
+             }
+        }
+    </ul>
+    <div>
+        <p>Prędkość stacji kosmicznej obliczona na podstawie najnowszych koordynatów wynosi: @Model.Speed m/s</p>
+    </div>
 </div>
 

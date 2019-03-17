@@ -1,4 +1,5 @@
-﻿using IssLocator.Models;
+﻿using IssLocator.Dtos;
+using IssLocator.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,6 @@ namespace IssLocator.Data
         {
         }
 
-        public DbSet<IssLocation> IssLocations { get; set; }
+        public DbSet<IssTrackPoint> IssTrackPoints { get; set; }
     }
 }

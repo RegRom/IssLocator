@@ -3,34 +3,47 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Hangfire;
+using IssLocator.Data;
 using Microsoft.AspNetCore.Mvc;
 using IssLocator.Models;
+using IssLocator.ViewModels;
 
 namespace IssLocator.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IssLocationController _issLocationController;
+        private readonly ApplicationDbContext _dbContext;
+
+        public HomeController(IssLocationController issLocationController, ApplicationDbContext dbContext)
+        {
+            _issLocationController = issLocationController;
+            _dbContext = dbContext;
+        }
         public IActionResult Index()
         {
-            return View();
+            _issLocationController.StartTracking();
+
+            var registeredTrackPoints = _dbContext.IssTrackPoints;
+
+            var viewModel = new IssLocationViewModel
+            {
+                TrackPoints = registeredTrackPoints.ToList(),
+                Speed = IssLocationController.CalculateSpeed
+                (
+                    registeredTrackPoints.FirstOrDefault(),
+                    registeredTrackPoints.LastOrDefault()
+                )
+            };
+
+            return View(viewModel);
         }
 
         public IActionResult About()
         {
-            ViewData["Message"] = "Your application description page.";
+            ViewData["Message"] = "Lokalizator ISS - szczegóły aplikacji.";
 
-            return View();
-        }
-
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
             return View();
         }
 

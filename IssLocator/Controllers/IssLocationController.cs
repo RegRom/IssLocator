@@ -1,4 +1,5 @@
-﻿using GeoCoordinatePortable;
+﻿using System;
+using GeoCoordinatePortable;
 using IssLocator.Data;
 using IssLocator.Models;
 using IssLocator.ViewModels;
@@ -7,6 +8,9 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Hangfire;
+using IssLocator.Dtos;
+using Microsoft.AspNetCore.Routing.Constraints;
 using static IssLocator.Constants.ApiSources;
 using static IssLocator.Constants.UnitsConstants;
 
@@ -26,53 +30,88 @@ namespace IssLocator.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IssLocation>> GetIssLocation()
+        public async Task<IssLocationDto> GetIssLocation()
         {
             using (var httpClient = new HttpClient())
             {
                 var json = await httpClient.GetStringAsync(IssLocationUrl);
 
-                var deserializedJson = JsonConvert.DeserializeObject<IssLocation>(json);
+                var deserializedJson = JsonConvert.DeserializeObject<IssLocationDto>(json);
 
                 return deserializedJson;
             }
         }
 
-        private double CalculateDistance(IssLocation beginningLocation, IssLocation endingLocation)
+        private static double CalculateDistance(IssTrackPoint beginningTrackPoint, IssTrackPoint endingTrackPoint)
         {
-            var start = new GeoCoordinate(beginningLocation.Latitude, beginningLocation.Longitude);
-            var end = new GeoCoordinate(endingLocation.Latitude, endingLocation.Longitude);
+            var start = new GeoCoordinate(beginningTrackPoint.Latitude, beginningTrackPoint.Longitude);
+            var end = new GeoCoordinate(endingTrackPoint.Latitude, endingTrackPoint.Longitude);
 
             return start.GetDistanceTo(end);
         }
 
-        private double CalculateSpeed(IssLocation beginningLocation, IssLocation endLocation)
+        public static double CalculateSpeed(IssTrackPoint beginningTrackPoint, IssTrackPoint endingTrackPoint)
         {
-            var distance = CalculateDistance(beginningLocation, endLocation) / Kilometers;
-            var timeDelta = endLocation.Timestamp - beginningLocation.Timestamp / Hours;
+            var distance = CalculateDistance(beginningTrackPoint, endingTrackPoint);
+            var timeDelta = (endingTrackPoint.Timestamp - beginningTrackPoint.Timestamp);
+            var speed = distance / timeDelta;
 
-            return distance / timeDelta;
+            return Math.Round(speed, 2);
         }
 
-        public async Task<IActionResult> TrackIss()
+        private static IssTrackPoint MapIssTrackPoint(IssLocationDto locationDto)
         {
-            var startTrackPoint = await GetIssLocation();
-            await _dbContext.IssLocations.AddAsync(startTrackPoint.Value);
-
-            await Task.Delay(IssPollTime);
-
-            var endTrackPoint = await GetIssLocation();
-            await _dbContext.IssLocations.AddAsync(endTrackPoint.Value);
-
-            var issSpeed = CalculateSpeed(startTrackPoint.Value, endTrackPoint.Value);
-
-            var viewModel = new IssLocationViewModel
+            if (locationDto.HasSucceeded.Equals("success"))
             {
-                LocationsPoints = new List<IssLocation>() {startTrackPoint.Value, endTrackPoint.Value},
-                Speed = issSpeed
-            };
-
-            return View(viewModel);
+                var beginningTrackPoint = new IssTrackPoint
+                {
+                    Timestamp = locationDto.Timestamp,
+                    Latitude = locationDto.IssCoordinatesDto.Latitude,
+                    Longitude = locationDto.IssCoordinatesDto.Longitude
+                };
+                return beginningTrackPoint;
+            }
+            else
+            {
+                Console.WriteLine("JSON File is invalid. Failed to map Track Point");
+                return null;
+            }
         }
+
+        public async Task AddIssTrackPoint()
+        {
+            var location = await GetIssLocation();
+            var beginningTrackPoint = MapIssTrackPoint(location);
+
+            await _dbContext.IssTrackPoints.AddAsync(beginningTrackPoint);
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public void StartTracking()
+        {
+            RecurringJob.AddOrUpdate(() => AddIssTrackPoint(), Cron.MinuteInterval(1));
+        }
+
+        //public async Task<IActionResult> AddIssTrackPoint()
+        //{
+        //    var startbeginningTrackPoint = await GetIssLocation();
+        //    await _dbContext.IssTrackPoints.AddAsync(startbeginningTrackPoint.Value);
+
+        //    await Task.Delay(IssPollTime);
+
+        //    var endbeginningTrackPoint = await GetIssLocation();
+        //    await _dbContext.IssTrackPoints.AddAsync(endbeginningTrackPoint.Value);
+
+        //    var issSpeed = CalculateSpeed(startbeginningTrackPoint.Value, endbeginningTrackPoint.Value);
+
+        //    var viewModel = new IssLocationViewModel
+        //    {
+        //        LocationsPoints = new List<IssLocationDto>() {startbeginningTrackPoint.Value, endbeginningTrackPoint.Value},
+        //        Speed = issSpeed
+        //    };
+
+        //    return View(viewModel);
+        //}
     }
 }
