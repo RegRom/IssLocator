@@ -26,15 +26,16 @@ namespace IssLocator.Controllers
             _issLocationController.StartTracking();
 
             var registeredTrackPoints = _dbContext.IssTrackPoints;
+            var speed = 0.0;
+
+            if (registeredTrackPoints.Count() > 2)
+                speed = IssLocationController.CalculateSpeed(registeredTrackPoints.FirstOrDefault(),
+                    registeredTrackPoints.Skip(1).FirstOrDefault());
 
             var viewModel = new IssLocationViewModel
             {
                 TrackPoints = registeredTrackPoints.ToList(),
-                Speed = IssLocationController.CalculateSpeed
-                (
-                    registeredTrackPoints.FirstOrDefault(),
-                    registeredTrackPoints.LastOrDefault()
-                )
+                Speed = speed
             };
 
             return View(viewModel);
