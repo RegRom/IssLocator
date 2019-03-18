@@ -1,4 +1,5 @@
-﻿using IssLocator.Models;
+﻿using System;
+using IssLocator.Models;
 using System.Collections.Generic;
 using IssLocator.Dtos;
 

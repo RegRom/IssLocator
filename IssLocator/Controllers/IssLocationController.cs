@@ -1,18 +1,17 @@
 ﻿using System;
-using GeoCoordinatePortable;
-using IssLocator.Data;
-using IssLocator.Models;
-using IssLocator.ViewModels;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using GeoCoordinatePortable;
 using Hangfire;
+using IssLocator.Data;
 using IssLocator.Dtos;
-using Microsoft.AspNetCore.Routing.Constraints;
+using IssLocator.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using static IssLocator.Constants.ApiSources;
-using static IssLocator.Constants.UnitsConstants;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -71,11 +70,9 @@ namespace IssLocator.Controllers
                 };
                 return beginningTrackPoint;
             }
-            else
-            {
-                Console.WriteLine("JSON File is invalid. Failed to map Track Point");
-                return null;
-            }
+
+            Console.WriteLine("JSON File is invalid. Failed to map Track Point");
+            return null;
         }
 
         public async Task AddIssTrackPoint()
@@ -92,26 +89,5 @@ namespace IssLocator.Controllers
         {
             RecurringJob.AddOrUpdate(() => AddIssTrackPoint(), Cron.MinuteInterval(1));
         }
-
-        //public async Task<IActionResult> AddIssTrackPoint()
-        //{
-        //    var startbeginningTrackPoint = await GetIssLocation();
-        //    await _dbContext.IssTrackPoints.AddAsync(startbeginningTrackPoint.Value);
-
-        //    await Task.Delay(IssPollTime);
-
-        //    var endbeginningTrackPoint = await GetIssLocation();
-        //    await _dbContext.IssTrackPoints.AddAsync(endbeginningTrackPoint.Value);
-
-        //    var issSpeed = CalculateSpeed(startbeginningTrackPoint.Value, endbeginningTrackPoint.Value);
-
-        //    var viewModel = new IssLocationViewModel
-        //    {
-        //        LocationsPoints = new List<IssLocationDto>() {startbeginningTrackPoint.Value, endbeginningTrackPoint.Value},
-        //        Speed = issSpeed
-        //    };
-
-        //    return View(viewModel);
-        //}
     }
 }

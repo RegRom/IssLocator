@@ -15,5 +15,11 @@ namespace IssLocator.Models
         public long Timestamp { get; set; }
         public double Longitude { get; set; }
         public double Latitude { get; set; }
+
+        public DateTime ToDateTime()
+        {
+            var dateTime = new System.DateTime(1970, 1, 1, 0, 0, 0, 0);
+            return dateTime.AddSeconds(Timestamp);
+        }
     }
 }

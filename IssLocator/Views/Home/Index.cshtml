@@ -3,20 +3,21 @@
     ViewData["Title"] = "Home Page";
 }
 
-<h1>ISS Locator Application</h1>
-
+<div>
+    <h1>ISS Locator Application</h1>
+</div>
 
 <div class="row">
     <div>
-        @*<p>Click the button below to check current ISS location</p>*@
         <p>Witaj w internetowym lokalizatorze Międzynarodowej Stacji Kosmicznej (ISS)</p>
     </div>
     <div>
         <p>Prędkość stacji kosmicznej obliczona na podstawie najnowszych koordynatów wynosi: @Model.Speed m/s</p>
     </div>
-    <table class="table">
+    <table class="table table-striped">
         <thead>
         <tr>
+            <th scope="col">#</th>
             <th scope="col">Czas pomiaru</th>
             <th scope="col">Szerokość geograficzna</th>
             <th scope="col">Długość geograficzna</th>
@@ -25,10 +26,19 @@
         <tbody>
         @if (Model.TrackPoints.Count() > 2)
         {
+            var counter = 0;
             foreach (var point in Model.TrackPoints)
             {
+                counter++;
                 <tr>
-                    <td>@Html.DisplayFor(modelpoint => point.Timestamp)</td>
+                    <td>@counter</td>
+                    <td>
+
+                        @{
+                            var dateTime = point.ToDateTime();
+                            @Html.DisplayFor(modelpoint => dateTime)
+                        }
+                    </td>
                     <td>@Html.DisplayFor(modelpoint => point.Latitude)</td>
                     <td>@Html.DisplayFor(modelpoint => point.Longitude)</td>
                 </tr>

@@ -34,7 +34,7 @@ namespace IssLocator.Controllers
 
             var viewModel = new IssLocationViewModel
             {
-                TrackPoints = registeredTrackPoints.ToList(),
+                TrackPoints = registeredTrackPoints.ToList().OrderByDescending(point => point.Timestamp),
                 Speed = speed
             };
 
