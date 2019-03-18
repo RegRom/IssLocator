@@ -5,34 +5,36 @@
 
 <h1>ISS Locator Application</h1>
 
-<div>
-    @*<p>Click the button below to check current ISS location</p>*@
-    <p>Witaj w internetowym lokalizatorze Międzynarodowej Stacji Kosmicznej (ISS)</p>
-</div>
-<div>
-    <ul>
-        @if (Model.TrackPoints.Count() > 2)
-        {
-            foreach (var point in Model.TrackPoints)
-             {
-                 <li>
-                     <div>
-                         <div>
-                             @point.Timestamp
-                         </div>
-                         <div>
-                             @point.Latitude
-                         </div>
-                         <div>
-                             @point.Longitude
-                         </div>
-                     </div>
-                 </li>
-             }
-        }
-    </ul>
+
+<div class="row">
+    <div>
+        @*<p>Click the button below to check current ISS location</p>*@
+        <p>Witaj w internetowym lokalizatorze Międzynarodowej Stacji Kosmicznej (ISS)</p>
+    </div>
     <div>
         <p>Prędkość stacji kosmicznej obliczona na podstawie najnowszych koordynatów wynosi: @Model.Speed m/s</p>
     </div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Czas pomiaru</th>
+            <th scope="col">Szerokość geograficzna</th>
+            <th scope="col">Długość geograficzna</th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (Model.TrackPoints.Count() > 2)
+        {
+            foreach (var point in Model.TrackPoints)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelpoint => point.Timestamp)</td>
+                    <td>@Html.DisplayFor(modelpoint => point.Latitude)</td>
+                    <td>@Html.DisplayFor(modelpoint => point.Longitude)</td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
 </div>
 

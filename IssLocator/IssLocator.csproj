@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="bootstrap" Version="3.3.7" />
     <PackageReference Include="GeoCoordinate" Version="1.1.0" />
     <PackageReference Include="Hangfire" Version="1.6.23" />
     <PackageReference Include="Hangfire.Core" Version="1.6.23" />
