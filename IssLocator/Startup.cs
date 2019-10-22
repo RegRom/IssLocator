@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ReflectionIT.Mvc.Paging;
 
 namespace IssLocator
 {
@@ -47,7 +46,6 @@ namespace IssLocator
             services.AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddControllersAsServices();
-            services.AddPaging();
 
             services.AddScoped<IIssLocationService, IssLocationService>();
 
