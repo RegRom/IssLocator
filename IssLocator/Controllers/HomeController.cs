@@ -1,40 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using IssLocator.Data;
+using IssLocator.Interfaces;
+using IssLocator.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ReflectionIT.Mvc.Paging;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Hangfire;
-using IssLocator.Data;
-using Microsoft.AspNetCore.Mvc;
-using IssLocator.Models;
-using IssLocator.ViewModels;
 
 namespace IssLocator.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly IssLocationController _issLocationController;
+        private readonly IIssLocationService _issLocationService;
         private readonly ApplicationDbContext _dbContext;
 
-        public HomeController(IssLocationController issLocationController, ApplicationDbContext dbContext)
+        public HomeController(ApplicationDbContext dbContext, IIssLocationService issLocationService)
         {
-            _issLocationController = issLocationController;
             _dbContext = dbContext;
+            _issLocationService = issLocationService;
         }
-        public IActionResult Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            _issLocationController.StartTracking();
-
-            var registeredTrackPoints = _dbContext.IssTrackPoints;
+            var registeredTrackPoints = _dbContext.IssTrackPoints.AsNoTracking() ;
             var speed = 0.0;
 
             if (registeredTrackPoints.Count() > 2)
-                speed = IssLocationController.CalculateSpeed(registeredTrackPoints.FirstOrDefault(),
+                speed = _issLocationService.CalculateSpeed(registeredTrackPoints.FirstOrDefault(),
                     registeredTrackPoints.Skip(1).FirstOrDefault());
+
+            var sortedPoints = registeredTrackPoints.OrderByDescending(point => point.Timestamp);
 
             var viewModel = new IssLocationViewModel
             {
-                TrackPoints = registeredTrackPoints.ToList().OrderByDescending(point => point.Timestamp),
+                TrackPoints = await PagingList.CreateAsync(sortedPoints, 20, page),
                 Speed = speed
             };
 

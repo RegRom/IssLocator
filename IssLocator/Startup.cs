@@ -1,18 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hangfire;
+﻿using Hangfire;
+using IssLocator.Data;
+using IssLocator.Hangfire;
+using IssLocator.Interfaces;
+using IssLocator.Services;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using IssLocator.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ReflectionIT.Mvc.Paging;
 
 namespace IssLocator
 {
@@ -35,23 +34,27 @@ namespace IssLocator
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddHangfire(configuration =>
-            {
-                configuration.UseSqlServerStorage("Server=(localdb)\\mssqllocaldb;Database=aspnet-IssLocator-5C001A4A-D296-449B-99D0-CFFE9A8C0498;Trusted_Connection=True;MultipleActiveResultSets=true");
-            });
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
             services.AddDefaultIdentity<IdentityUser>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddHangfire(configuration =>
+            {
+                configuration.UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection"));
+            });
 
             services.AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddControllersAsServices();
+            services.AddPaging();
+
+            services.AddScoped<IIssLocationService, IssLocationService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ApplicationDbContext applicationDbContext)
         {
             if (env.IsDevelopment())
             {
@@ -78,6 +81,11 @@ namespace IssLocator
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            GlobalJobFilters.Filters.Add(new AutomaticRetryAttribute { Attempts = 0 });
+            RecurringJobsScheduler.ScheduleRecurringJobs();
+
+            applicationDbContext.Database.Migrate();
         }
     }
 }

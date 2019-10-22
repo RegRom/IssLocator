@@ -1,19 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using IssLocator.Dtos;
-using Newtonsoft.Json;
 
 namespace IssLocator.Models
 {
     public class IssTrackPoint
     {
         [Key]
+        [DisplayName("Id")]
         public int TrackPointId { get; set; }
+
+        [DisplayName("Czas pomiaru")]
         public long Timestamp { get; set; }
+
+        [DisplayName("Długość geograficzna")]
         public double Longitude { get; set; }
+
+        [DisplayName("Szerokość geograficzna")]
         public double Latitude { get; set; }
 
         public DateTime ToDateTime()

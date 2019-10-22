@@ -1,4 +1,7 @@
 ﻿@model IssLocator.ViewModels.IssLocationViewModel
+@using ReflectionIT.Mvc.Paging
+@addTagHelper *, ReflectionIT.Mvc.Paging
+
 @{
     ViewData["Title"] = "Home Page";
 }
@@ -14,6 +17,11 @@
     <div>
         <p>Prędkość stacji kosmicznej obliczona na podstawie najnowszych koordynatów wynosi: @Model.Speed m/s</p>
     </div>
+    
+    <nav aria-label="Koordynaty ISS">
+        @await Component.InvokeAsync("Pager", new { pagingList = Model.TrackPoints })
+    </nav>
+
     <table class="table table-striped">
         <thead>
         <tr>

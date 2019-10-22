@@ -1,6 +1,4 @@
-using System;
-
-namespace IssLocator.Models
+namespace IssLocator.ViewModels
 {
     public class ErrorViewModel
     {
